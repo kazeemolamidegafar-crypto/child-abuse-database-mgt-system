@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: child-protection-system
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    # seed.py creates the schema + demo accounts if the DB doesn't exist yet;
+    # database.ensure_db() also does this on first request, so this is a safety net.
+    preDeployCommand: python seed.py
+    startCommand: gunicorn app:app --workers 2 --timeout 60
+    healthCheckPath: /
+    # No persistent disk on the free tier: the SQLite file lives on the
+    # service's local (ephemeral) filesystem, in the app's own directory.
+    # It survives while the service stays up, but resets on every deploy
+    # and on the ~15-min inactivity spin-down/restart cycle. Fine for a
+    # demo; not a place to leave real data.
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.12.0"
