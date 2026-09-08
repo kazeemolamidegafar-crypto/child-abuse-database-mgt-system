@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: child-protection-system
+    runtime: python
+    plan: starter
+    region: oregon
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    # seed.py creates the schema + demo accounts if the DB doesn't exist yet;
+    # database.ensure_db() also does this on first request, so this is a safety net.
+    preDeployCommand: python seed.py
+    startCommand: gunicorn app:app --workers 2 --timeout 60
+    healthCheckPath: /
+    disk:
+      name: sqlite-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DB_PATH
+        value: /var/data/child_protection.db
+      - key: PYTHON_VERSION
+        value: "3.12.0"
