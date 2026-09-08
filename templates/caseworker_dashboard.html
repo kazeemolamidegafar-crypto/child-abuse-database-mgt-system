@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}My Caseload{% endblock %}
+{% block content %}
+<h1>{{ 'All Cases' if session.role == 'administrator' else 'My Assigned Cases' }}</h1>
+
+<table class="data-table">
+    <thead>
+        <tr><th>Reference</th><th>Child</th><th>Category</th><th>Reported</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for c in cases %}
+        <tr>
+            <td>{{ c.case_reference_number }}</td>
+            <td>{{ c.child_name }}</td>
+            <td>{{ c.category_of_concern }}</td>
+            <td>{{ c.date_reported }}</td>
+            <td><span class="badge status-{{ c.status | replace(' ', '') }}">{{ c.status }}</span></td>
+            <td><a href="{{ url_for('view_case', case_id=c.case_id) }}">Open</a></td>
+        </tr>
+    {% else %}
+        <tr><td colspan="6">No cases assigned yet.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

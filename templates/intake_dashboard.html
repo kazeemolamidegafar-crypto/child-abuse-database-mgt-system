@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Register a Case{% endblock %}
+{% block content %}
+<h1>Register a New Report</h1>
+
+<div class="form-card">
+    <h2>Step 1 — Check for an existing child record</h2>
+    <input type="text" id="child-search" placeholder="Search by name or reference code..." autocomplete="off">
+    <div id="search-results"></div>
+</div>
+
+<form method="post" action="{{ url_for('register_case') }}" class="form-card" id="case-form">
+    <h2>Step 2 — Child details</h2>
+    <input type="hidden" name="existing_child_id" id="existing_child_id" value="">
+    <div id="existing-child-banner" class="flash flash-info" style="display:none;"></div>
+
+    <div id="new-child-fields">
+        <label>Child Full Name</label>
+        <input type="text" name="child_full_name">
+        <label>Date of Birth</label>
+        <input type="date" name="child_dob">
+        <label>Guardian Contact</label>
+        <input type="text" name="guardian_contact" placeholder="Phone / email">
+        <label>Address</label>
+        <input type="text" name="address">
+    </div>
+
+    <h2>Step 3 — Case details</h2>
+    <label>Category of Concern</label>
+    <select name="category_of_concern" required>
+        <option value="">Select category…</option>
+        {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+    </select>
+    <label>Date Reported</label>
+    <input type="date" name="date_reported" value="{{ '' }}">
+    <label>Summary of Report</label>
+    <textarea name="summary" rows="4" placeholder="Brief, factual account of what was reported..."></textarea>
+
+    <button type="submit" class="btn-primary">Register Case</button>
+</form>
+
+<h2>Cases You Have Registered</h2>
+<table class="data-table">
+    <thead><tr><th>Reference</th><th>Child</th><th>Category</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for c in my_cases %}
+        <tr>
+            <td>{{ c.case_reference_number }}</td>
+            <td>{{ c.child_name }}</td>
+            <td>{{ c.category_of_concern }}</td>
+            <td><span class="badge status-{{ c.status | replace(' ', '') }}">{{ c.status }}</span></td>
+            <td><a href="{{ url_for('view_case', case_id=c.case_id) }}">View</a></td>
+        </tr>
+    {% else %}
+        <tr><td colspan="5">You have not registered any cases yet.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<script>
+const searchBox = document.getElementById('child-search');
+const resultsDiv = document.getElementById('search-results');
+const existingIdField = document.getElementById('existing_child_id');
+const newChildFields = document.getElementById('new-child-fields');
+const banner = document.getElementById('existing-child-banner');
+
+let debounce;
+searchBox.addEventListener('input', () => {
+    clearTimeout(debounce);
+    const q = searchBox.value.trim();
+    if (!q) { resultsDiv.innerHTML = ''; return; }
+    debounce = setTimeout(() => {
+        fetch(`/intake/search-child?q=${encodeURIComponent(q)}`)
+            .then(r => r.text())
+            .then(html => resultsDiv.innerHTML = html);
+    }, 300);
+});
+
+resultsDiv.addEventListener('click', (e) => {
+    if (e.target.classList.contains('pick-child')) {
+        existingIdField.value = e.target.dataset.id;
+        banner.style.display = 'block';
+        banner.textContent = `Linking to existing record: ${e.target.dataset.name} (${e.target.dataset.ref})`;
+        newChildFields.style.display = 'none';
+        resultsDiv.innerHTML = '';
+        searchBox.value = '';
+    }
+});
+</script>
+{% endblock %}

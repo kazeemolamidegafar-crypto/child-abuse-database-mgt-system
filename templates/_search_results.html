@@ -1,0 +1,15 @@
+{% if results %}
+<ul class="search-results-list">
+    {% for r in results %}
+    <li>
+        <button type="button" class="pick-child" data-id="{{ r.child_id }}"
+                data-name="{{ r.full_name }}" data-ref="{{ r.child_reference_code }}">
+            {{ r.full_name }} — <code>{{ r.child_reference_code }}</code>
+            {% if r.date_of_birth %}(DOB: {{ r.date_of_birth }}){% endif %}
+        </button>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No matching child record found. A new record will be created below.</p>
+{% endif %}

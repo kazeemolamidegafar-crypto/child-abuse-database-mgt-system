@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Case {{ case.case_reference_number }}{% endblock %}
+{% block content %}
+<h1>Case {{ case.case_reference_number }}
+    <span class="badge status-{{ case.status | replace(' ', '') }}">{{ case.status }}</span>
+</h1>
+
+<div class="two-col">
+    <div class="form-card">
+        <h2>Child Record</h2>
+        <p><b>Name:</b> {{ case.child_name }}</p>
+        <p><b>Reference Code:</b> {{ case.child_reference_code }}</p>
+        {% if session.role in ('administrator', 'caseworker') %}
+        <p><b>Date of Birth:</b> {{ case.date_of_birth or '—' }}</p>
+        <p><b>Guardian Contact:</b> {{ case.guardian_contact or '—' }}</p>
+        <p><b>Address:</b> {{ case.address or '—' }}</p>
+        {% else %}
+        <p class="muted">Additional identifying details are restricted to the assigned
+           caseworker and administrator.</p>
+        {% endif %}
+    </div>
+
+    <div class="form-card">
+        <h2>Case Details</h2>
+        <p><b>Category of Concern:</b> {{ case.category_of_concern }}</p>
+        <p><b>Date Reported:</b> {{ case.date_reported }}</p>
+        <p><b>Summary:</b> {{ case.summary or '—' }}</p>
+        <p><b>Last Updated:</b> {{ case.updated_at }}</p>
+
+        {% if session.role == 'administrator' %}
+        <form method="post" action="{{ url_for('assign_case', case_id=case.case_id) }}">
+            <label>Assign Caseworker</label>
+            <select name="caseworker_id">
+                <option value="">— Unassigned —</option>
+                {% for cw in caseworkers %}
+                <option value="{{ cw.user_id }}" {% if case.assigned_caseworker_id == cw.user_id %}selected{% endif %}>
+                    {{ cw.full_name }}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-small">Save Assignment</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if can_edit %}
+<div class="form-card">
+    <h2>Update Status</h2>
+    <form method="post" action="{{ url_for('update_status', case_id=case.case_id) }}">
+        <select name="status">
+            {% for s in statuses %}
+            <option value="{{ s }}" {% if s == case.status %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn-primary">Update Status</button>
+    </form>
+</div>
+{% endif %}
+
+<div class="two-col">
+    <div class="form-card">
+        <h2>Case Notes</h2>
+        {% if can_edit %}
+        <form method="post" action="{{ url_for('add_note', case_id=case.case_id) }}">
+            <textarea name="note_text" rows="3" placeholder="Add a dated case note..." required></textarea>
+            <button type="submit" class="btn-small">Add Note</button>
+        </form>
+        {% endif %}
+        <ul class="note-list">
+        {% for n in notes %}
+            <li><b>{{ n.author_name }}</b> — <span class="muted">{{ n.created_at }}</span><br>{{ n.note_text }}</li>
+        {% else %}
+            <li class="muted">No notes recorded.</li>
+        {% endfor %}
+        </ul>
+    </div>
+
+    <div class="form-card">
+        <h2>Referrals</h2>
+        {% if can_edit %}
+        <form method="post" action="{{ url_for('add_referral', case_id=case.case_id) }}">
+            <select name="referred_to" required>
+                <option value="">Refer to…</option>
+                {% for t in referral_targets %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+            </select>
+            <input type="date" name="date_referred">
+            <button type="submit" class="btn-small">Create Referral</button>
+        </form>
+        {% endif %}
+        <ul class="note-list">
+        {% for r in referrals %}
+            <li>
+                <b>{{ r.referred_to }}</b> —
+                <span class="badge">{{ r.referral_status }}</span>
+                <span class="muted">({{ r.date_referred }})</span>
+                {% if r.outcome_notes %}<br>{{ r.outcome_notes }}{% endif %}
+                {% if can_edit %}
+                <form method="post" action="{{ url_for('update_referral_status', case_id=case.case_id, referral_id=r.referral_id) }}" class="inline-form">
+                    <select name="referral_status">
+                        <option value="Pending" {% if r.referral_status=='Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Acknowledged" {% if r.referral_status=='Acknowledged' %}selected{% endif %}>Acknowledged</option>
+                        <option value="Resolved" {% if r.referral_status=='Resolved' %}selected{% endif %}>Resolved</option>
+                    </select>
+                    <input type="text" name="outcome_notes" placeholder="Outcome notes" value="{{ r.outcome_notes or '' }}">
+                    <button type="submit" class="btn-small">Update</button>
+                </form>
+                {% endif %}
+            </li>
+        {% else %}
+            <li class="muted">No referrals recorded.</li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<p><a href="{{ url_for('dashboard') }}">← Back to dashboard</a></p>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Anonymized Reports{% endblock %}
+{% block content %}
+<h1>Anonymized Statistical Reports</h1>
+<p class="muted">These figures are aggregate counts only. No individually identifying
+   information is displayed on this page.</p>
+
+<div class="two-col">
+    <div class="form-card">
+        <h2>Cases by Status</h2>
+        <table class="data-table">
+            <thead><tr><th>Status</th><th>Count</th></tr></thead>
+            <tbody>
+            {% for r in by_status %}<tr><td>{{ r.status }}</td><td>{{ r.n }}</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="form-card">
+        <h2>Cases by Category of Concern</h2>
+        <table class="data-table">
+            <thead><tr><th>Category</th><th>Count</th></tr></thead>
+            <tbody>
+            {% for r in by_category %}<tr><td>{{ r.category_of_concern }}</td><td>{{ r.n }}</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="two-col">
+    <div class="form-card">
+        <h2>Cases Reported by Month</h2>
+        <table class="data-table">
+            <thead><tr><th>Month</th><th>Count</th></tr></thead>
+            <tbody>
+            {% for r in by_month %}<tr><td>{{ r.month }}</td><td>{{ r.n }}</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="form-card">
+        <h2>Referral Outcomes</h2>
+        <table class="data-table">
+            <thead><tr><th>Referral Status</th><th>Count</th></tr></thead>
+            <tbody>
+            {% for r in referral_outcomes %}<tr><td>{{ r.referral_status }}</td><td>{{ r.n }}</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

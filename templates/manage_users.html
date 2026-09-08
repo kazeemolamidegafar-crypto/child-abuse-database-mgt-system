@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Manage Users{% endblock %}
+{% block content %}
+<h1>User &amp; Role Management</h1>
+
+<div class="two-col">
+    <div>
+        <h2>Create Account</h2>
+        <form method="post" class="form-card">
+            <label>Full Name</label>
+            <input type="text" name="full_name" required>
+            <label>Username</label>
+            <input type="text" name="username" required>
+            <label>Temporary Password</label>
+            <input type="password" name="password" required>
+            <label>Role</label>
+            <select name="role" required>
+                <option value="administrator">Administrator</option>
+                <option value="caseworker">Caseworker</option>
+                <option value="intake_officer">Intake / Reporting Officer</option>
+            </select>
+            <button type="submit" class="btn-primary">Create User</button>
+        </form>
+    </div>
+
+    <div>
+        <h2>Existing Accounts</h2>
+        <table class="data-table">
+            <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            {% for u in users %}
+                <tr>
+                    <td>{{ u.full_name }}</td>
+                    <td>{{ u.username }}</td>
+                    <td>{{ u.role.replace('_',' ') }}</td>
+                    <td>{% if u.is_active %}<span class="badge badge-active">Active</span>{% else %}<span class="badge badge-inactive">Deactivated</span>{% endif %}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('toggle_user', user_id=u.user_id) }}">
+                            <button type="submit" class="btn-small">
+                                {{ 'Deactivate' if u.is_active else 'Reactivate' }}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

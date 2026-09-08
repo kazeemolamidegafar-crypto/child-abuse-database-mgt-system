@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Child Protection Case Management{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% if session.get('user_id') %}
+<nav class="navbar">
+    <div class="brand">🛡️ Child Protection CMS</div>
+    <div class="nav-links">
+        {% if session.role == 'administrator' %}
+            <a href="{{ url_for('admin_dashboard') }}">Overview</a>
+            <a href="{{ url_for('manage_users') }}">Users</a>
+            <a href="{{ url_for('caseworker_dashboard') }}">All Cases</a>
+            <a href="{{ url_for('audit_log') }}">Audit Log</a>
+            <a href="{{ url_for('reports') }}">Reports</a>
+        {% elif session.role == 'caseworker' %}
+            <a href="{{ url_for('caseworker_dashboard') }}">My Cases</a>
+        {% elif session.role == 'intake_officer' %}
+            <a href="{{ url_for('intake_dashboard') }}">Register Case</a>
+        {% endif %}
+    </div>
+    <div class="nav-user">
+        <span>{{ session.full_name }} <em>({{ session.role.replace('_',' ') }})</em></span>
+        <a href="{{ url_for('logout') }}" class="btn-logout">Log out</a>
+    </div>
+</nav>
+{% endif %}
+
+<main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    Prototype system &mdash; demonstration data only. Not for use with real case records
+    without independent security review. See README.
+</footer>
+</body>
+</html>

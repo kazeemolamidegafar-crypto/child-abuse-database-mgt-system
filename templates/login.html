@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<div class="login-wrap">
+    <div class="login-card">
+        <h1>Child Protection Case Management</h1>
+        <p class="muted">Authorized personnel only. All access is logged.</p>
+        <form method="post" action="{{ url_for('login') }}">
+            <label>Username</label>
+            <input type="text" name="username" required autofocus>
+            <label>Password</label>
+            <input type="password" name="password" required>
+            <button type="submit" class="btn-primary">Log In</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
