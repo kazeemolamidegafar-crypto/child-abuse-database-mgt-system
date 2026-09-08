@@ -2,7 +2,7 @@ services:
   - type: web
     name: child-protection-system
     runtime: python
-    plan: starter
+    plan: free
     region: oregon
     branch: main
     buildCommand: pip install -r requirements.txt
@@ -11,14 +11,13 @@ services:
     preDeployCommand: python seed.py
     startCommand: gunicorn app:app --workers 2 --timeout 60
     healthCheckPath: /
-    disk:
-      name: sqlite-data
-      mountPath: /var/data
-      sizeGB: 1
+    # No persistent disk on the free tier: the SQLite file lives on the
+    # service's local (ephemeral) filesystem, in the app's own directory.
+    # It survives while the service stays up, but resets on every deploy
+    # and on the ~15-min inactivity spin-down/restart cycle. Fine for a
+    # demo; not a place to leave real data.
     envVars:
       - key: SECRET_KEY
         generateValue: true
-      - key: DB_PATH
-        value: /var/data/child_protection.db
       - key: PYTHON_VERSION
         value: "3.12.0"
